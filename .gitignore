@@ -8,3 +8,8 @@ build/
 .env
 .env.*
 firebase-debug.log
+serviceAccountKey.json
+scripts/serviceAccountKey.json
+.env
+.env.*
+firebase-debug.log
