@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdminTracker() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.adminTrackingLog == true;
+    }
+
+    // Action Log: admin-only reads, constrained client creates (MVP)
+    match /actionLogs/{logId} {
+      allow get, list: if isAdminTracker();
+
+      // Minimal validation for client-side writes. Consider moving to Cloud Functions later.
+      allow create: if isSignedIn() &&
+        request.resource.data.keys().hasOnly([
+          'ts', 'action', 'userId', 'userEmail', 'actingRoles', 'permissionsSnapshot',
+          'targetType', 'targetId', 'context', 'severity', 'message', 'metadata', 'ttlDeleteAt'
+        ]) &&
+        request.resource.data.action is string && request.resource.data.action.size() <= 64 &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.userEmail is string && request.resource.data.userEmail.size() <= 320 &&
+        (!('actingRoles' in request.resource.data) || (
+          request.resource.data.actingRoles is list && request.resource.data.actingRoles.size() <= 10 &&
+          request.resource.data.actingRoles.every(r => r is string && r.size() <= 64)
+        )) &&
+        (!('permissionsSnapshot' in request.resource.data) || request.resource.data.permissionsSnapshot is map) &&
+        (!('targetType' in request.resource.data) || (request.resource.data.targetType is string && request.resource.data.targetType.size() <= 64)) &&
+        (!('targetId' in request.resource.data) || (request.resource.data.targetId is string && request.resource.data.targetId.size() <= 256)) &&
+        (!('context' in request.resource.data) || (request.resource.data.context is string && request.resource.data.context.size() <= 64)) &&
+        (!('severity' in request.resource.data) || (
+          request.resource.data.severity in ['info','warning','critical']
+        )) &&
+        (!('message' in request.resource.data) || (request.resource.data.message is string && request.resource.data.message.size() <= 500)) &&
+        (!('metadata' in request.resource.data) || request.resource.data.metadata is map) &&
+        (!('ttlDeleteAt' in request.resource.data) || request.resource.data.ttlDeleteAt is timestamp) &&
+        // Ensure ts is present and is a timestamp (serverTimestamp resolves to timestamp in rules evaluation)
+        ('ts' in request.resource.data) && request.resource.data.ts is timestamp;
+
+      // Block updates/deletes from clients in MVP
+      allow update, delete: if false;
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

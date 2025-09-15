@@ -1,0 +1,355 @@
+.scheduling-window {
+  background: var(--bg-card);
+  color: var(--text-main, #fff);
+  border-radius: 16px;
+  max-width: 100vw;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 32px; /* extra space so content doesn't touch bottom */
+  overflow: hidden; /* prevent main container from scrolling; only internal panes scroll */
+  margin-top: 40px;
+}
+.scheduling-window.mobile {
+  border-radius: 0;
+  min-height: 100vh;
+  max-width: 100vw;
+  /* Use dynamic viewport to avoid iOS 100vh issues */
+  height: 100dvh;
+  padding-top: calc(56px + env(safe-area-inset-top, 0px));
+  /* Respect safe area at the bottom */
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.scheduling-window-back {
+  background: none;
+  border: none;
+  color: var(--text-main, #fff);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.scheduling-window-section {
+  font-size: 16px;
+  font-weight: 400;
+  margin-top: 16px; /* increase vertical spacing between info rows */
+  margin-left: 8px;
+}
+.scheduling-window-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scheduling-window-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 18px;
+  padding: 24px;
+}
+
+/* Header (title, media chip, progress, actions) */
+.sw-header {
+  margin: 0 24px;
+  background: var(--bg-elev-1);
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-row-gap: 8px;
+  grid-column-gap: 16px;
+  align-items: center;
+}
+.sw-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sw-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main, #0f172a);
+}
+.sw-chip {
+  display: inline-block;
+  color: #fff;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.sw-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sw-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Top header card wrapper */
+.sw-topcard {
+  margin: 0 24px;
+  background: var(--bg-elev-1, #f8fafc);
+  border: 1px solid var(--border-muted, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+/* Tabs UI (legacy small buttons) */
+.sw-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.sw-tab {
+  padding: 8px 12px;
+  border: 1px solid var(--border-muted, #e2e8f0);
+  background: var(--bg-elev-0, #fff);
+  color: var(--text-muted-strong, #334155);
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.sw-tab:hover { background: var(--bg-elev-1, #f8fafc); }
+.sw-tab.active { background: var(--bg-accent-soft, #eaf2ff); color: var(--text-accent, #1d4ed8); border-color: var(--border-accent, #bfdbfe); }
+
+/* Full-width segmented control */
+.sw-segmented {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  background: var(--button-bg);
+  border: 1px solid var(--border-muted);
+  border-radius: 12px;
+  padding: 4px;
+  height: 44px;
+  margin-bottom: 12px;
+}
+.sw-segmented .sw-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 3);
+  background: var(--bg-card);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: transform 180ms ease;
+  transform: translateX(calc(var(--active-index) * 100%));
+}
+.sw-seg {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted-strong, #334155);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px; /* for focus ring */
+  height: 100%;
+}
+.sw-seg:focus { outline: 2px solid rgba(59,130,246,0.45); outline-offset: 2px; }
+.sw-seg.active { color: var(--text-main, #0f172a); }
+
+/* Sticky behavior when placed inside scrollable panel */
+.sw-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg-elev-1, #f8fafc);
+  margin-bottom: 10px;
+  /* Connect segmented control to panel edges */
+  margin-left: -14px;
+  margin-right: -14px;
+  margin-top: -14px;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+
+/* Tab content panel with consistent size */
+.sw-tabpanel {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-muted);
+  border-radius: 14px;
+  padding: 14px;
+  /* Consistent size with responsive caps */
+  height: clamp(300px, 52vh, 560px);
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+}
+.sw-tabpanel .sw-scroll {
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.sw-pane-title {
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+  margin-bottom: 8px;
+}
+.sw-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+.sw-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 8px 0;
+}
+
+/* Comments list */
+.sw-comments-list {
+  border-radius: 10px;
+  padding: 8px 10px;
+  flex: 1;
+}
+.sw-comment {
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.sw-comment:last-child {
+  border-bottom: none;
+}
+.sw-comment-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.sw-comment-author {
+  font-weight: 600;
+  color: #0f172a;
+}
+.sw-comment-text { font-size: 16px; color: #0f172a; }
+.sw-comment-time { font-size: 14px; color: #64748b; }
+/* New byline class used under each comment */
+.sw-comment-byline { font-size: 14px; color: #64748b; }
+
+/* Comments tab full-height layout */
+.sw-comments-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  margin-bottom: 0; /* override default section spacing */
+}
+.sw-comments-input {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-elev-1, #f8fafc);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-muted, #e2e8f0);
+}
+
+/* History tab full-height layout */
+.sw-history-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  margin-bottom: 0; /* match comments behavior */
+}
+.sw-history-list {
+  flex: 1; /* fill available vertical space inside panel */
+  /* no overflow here; outer .sw-scroll handles scrolling */
+}
+
+/* Inputs/buttons in the panel */
+.sw-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-muted, #e2e8f0);
+  border-radius: 10px;
+  background: var(--bg-elev-0, #fff);
+}
+.sw-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* Mobile sizing adjustments */
+.scheduling-window.mobile .sw-comment-text { font-size: 17px; }
+.scheduling-window.mobile .sw-comment-byline { font-size: 15px; }
+.scheduling-window.mobile .sw-input { font-size: 16px; }
+
+/* Mobile layout tweaks */
+.scheduling-window.mobile .sw-header {
+  margin: 0 12px;
+  padding: 8px;
+  grid-template-columns: 1fr; /* stack rows */
+}
+.scheduling-window.mobile .sw-title { font-size: 20px; }
+.scheduling-window.mobile .sw-actions { flex-wrap: wrap; gap: 10px; }
+
+/* Reduce outer content margins on mobile; override inline margin with !important */
+.scheduling-window.mobile .scheduling-window-blocks {
+  margin: 8px 12px 0 !important;
+  flex: 1; /* allow blocks to grow to fill */
+}
+
+/* On mobile, let the tab panel flex to fill remaining space */
+.scheduling-window.mobile .sw-tabpanel {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.scheduling-window.mobile .sw-tabpanel .sw-scroll { flex: 1; }
+
+/* Increase tap targets on segmented control */
+.scheduling-window.mobile .sw-segmented { height: 48px; }
+.scheduling-window.mobile .sw-seg { font-size: 15px; }
+
+/* Keep back button visible at top while scrolling internal panes */
+.scheduling-window.mobile .scheduling-window-back {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg-card);
+  padding: 10px 12px;
+}
+
+/* History list */
+.sw-history-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.sw-history-item:last-child {
+  border-bottom: none;
+}
+.sw-history-desc { font-size: 16px; color: var(--text-main); }
+.sw-history-byline { font-size: 14px; color: #64748b; }
+
+/* Mobile sizing for history */
+.scheduling-window.mobile .sw-history-desc { font-size: 17px; }
+.scheduling-window.mobile .sw-history-byline { font-size: 15px; }
+
+/* Drawer slide-in animation (used by SchedulingView container) */
+.drawer-anim {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+@keyframes sw-drawer-slide-in {
+  0% { transform: translateX(16px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.drawer-anim.slide-in {
+  animation: sw-drawer-slide-in 280ms cubic-bezier(.22,.8,.36,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer-anim.slide-in {
+    animation: none;
+  }
+}

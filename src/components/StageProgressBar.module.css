@@ -1,0 +1,113 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bar {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  height: 18px;
+  min-width: 140px;
+}
+.segment {
+  flex: 1 1 0%;
+  border-radius: 4px;
+  height: 100%;
+  transition: background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.completed {
+  background: #299436 !important;
+}
+.filled {
+  background: #4f8cff;
+}
+.active {
+  /* Lighter blue for current stage */
+  background: #7fb4ff;
+  box-shadow: 0 0 0 2px #cde2ff;
+}
+.activeStalled {
+  /* Orange for stalled stage */
+  background: #ffb875;
+  box-shadow: 0 0 0 2px #ffdcae;
+}
+.empty {
+  background: #e3e3e3;
+}
+.currentStage {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-main, #222);
+  white-space: nowrap;
+}
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  margin-bottom: 18px;
+  transform: translateX(-50%) scale(1);
+  background: #222;
+  color: #fff;
+  padding: 12px 18px 12px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.20);
+  pointer-events: none;
+  opacity: 0;
+  animation: fadeInTooltip 0.18s forwards;
+  z-index: 99999;
+  white-space: pre-line;
+  min-width: 110px;
+  max-width: 200px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.segment {
+  pointer-events: auto;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0 8px;
+  border-style: solid;
+  border-color: #222 transparent transparent transparent;
+  display: block;
+}
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateX(-50%) scale(0.95); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+.tooltipPortal {
+  min-width: 120px !important;      /* or whatever minimum looks good */
+  max-width: 320px !important;   
+  min-height: 60px !important;   /* or larger if your messages are long */
+  width: auto !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  padding: 10px 16px !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  word-break: break-word !important;
+}
+
+

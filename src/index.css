@@ -1,4 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+
+:root {
+  --add-row-bg: rgba(79,140,255,0.10);
+  --add-row-bg-hover: rgba(79,140,255,0.18);
+  --overlay-bg: rgba(245,247,251,0.97);
+  --button-bg: #f7faff;
+  --button-border: #e0eafc;
+  --button-text: #335;
+  --button-bg-hover: #e0eafc;
+  --button-text-hover: #222;
+  --bg-main: #f4f6fa;
+  --bg-card: #fff;
+  --text-main: #222;
+  --sidebar-bg: #f7faff;
+  --sidebar-border: #e0eafc;
+  --table-header: #e6ebf5;
+  --scrollbar-bg: #e0eafc;
+  --scrollbar-thumb: #b6c7e3;
+  --scrollbar-thumb-hover: #94a3b8;
+  --page-header: #fff;
+  --title-font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+[data-theme="dark"] {
+  --add-row-bg: rgba(79,140,255,0.18);
+  --add-row-bg-hover: rgba(79,140,255,0.28);
+  --overlay-bg: rgba(24,26,27,0.97);
+  --button-bg: #232629;
+  --button-border: #2a2d2f;
+  --button-text: #fff;
+  --button-bg-hover: #36393c;
+  --button-text-hover: #ffe484;
+  --bg-main: #181a1b;
+  --bg-card: #232629;
+  --text-main: #fff;
+  --sidebar-bg: #232629;
+  --sidebar-border: #2a2d2f;
+  --table-header-bg: #36393c;
+  --scrollbar-bg: #232629;
+  --scrollbar-thumb: #36393c;
+  --scrollbar-thumb-hover: #44495a;
+}
+
 body {
+  background: var(--bg-main);
+  color: var(--text-main);
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

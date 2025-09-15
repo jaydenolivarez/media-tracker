@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "photo-tracker-59878"
+  },
+  "targets": {
+    "photo-tracker-59878": {
+      "hosting": {
+        "media": [
+          "photo-tracker-59878"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
