@@ -837,11 +837,53 @@ export const notifyOnPriorityRequest = functions.firestore
         const updateType = after.updateType || "";
         const publicId = after.publicId || context.params.taskId;
         const link = `https://media.ortools.co/dashboard/tasks/${publicId}`;
-        let creatorName = "";
-        if (Array.isArray(after.log) && after.log[0] && after.log[0].user) {
-          const user = after.log[0].user;
-          creatorName =
-            user.displayName || user.email || user.uid || "Unknown User";
+        // Determine who marked the task as priority
+        // Prefer the newly added priority_request_change log entry user
+        type TaskLogEntry = {
+          type?: string;
+          user?: { displayName?: string; email?: string; uid?: string };
+          [key: string]: unknown;
+        };
+        const beforeLogs: TaskLogEntry[] = Array.isArray(before.log) ?
+          (before.log as TaskLogEntry[]) :
+          [];
+        const afterLogs: TaskLogEntry[] = Array.isArray(after.log) ?
+          (after.log as TaskLogEntry[]) :
+          [];
+        const newlyAddedPriorityLogs = afterLogs.filter((entry: TaskLogEntry) =>
+          entry && entry.type === "priority_request_change" &&
+          !beforeLogs.some((b: TaskLogEntry) => JSON.stringify(b) ===
+            JSON.stringify(entry))
+        );
+        // Compute marker (actor) name
+        let markerName = "";
+        const pickName =
+          (u?: { displayName?: string; email?: string; uid?: string }) =>
+            (u?.displayName || u?.email || u?.uid || "Unknown User");
+        if (newlyAddedPriorityLogs.length > 0) {
+          const actor =
+            newlyAddedPriorityLogs[newlyAddedPriorityLogs.length - 1];
+          markerName = pickName(actor.user);
+        } else {
+          // Fallback: find most recent priority_request_change in afterLogs
+          const lastPriority =
+            [...afterLogs].reverse().find((e) => e && e.type ===
+              "priority_request_change");
+          if (lastPriority) {
+            markerName = pickName(lastPriority.user);
+          } else if (Array.isArray(after.log) &&
+            after.log[0] && (after.log[0] as any).user) {
+            // Final fallback: task creator (first log entry)
+            const user =
+              (after.log[0] as any).user as {
+                displayName?: string;
+                email?: string;
+                uid?: string;
+              };
+            markerName = pickName(user);
+          } else {
+            markerName = "Unknown User";
+          }
         }
         const mediaTypeSuffix =
           after.mediaType ? ` - ${formatMediaType(after.mediaType)}` : "";
@@ -853,13 +895,13 @@ export const notifyOnPriorityRequest = functions.firestore
             "A task has been marked as a PRIORITY REQUEST.\n\n" +
             `Property: ${propertyName}\n` +
             `Update Type: ${updateType}\n` +
-            `Marked By: ${creatorName}\n` +
+            `Marked By: ${markerName}\n` +
             `Task Link: ${link}`,
           html:
             `<h3>Task Marked as Priority Request${mediaTypeSuffix}</h3>` +
             `<p><b>Property:</b> ${propertyName}<br/>` +
             `<b>Update Type:</b> ${updateType}<br/>` +
-            `<b>Marked By:</b> ${creatorName}<br/>` +
+            `<b>Marked By:</b> ${markerName}<br/>` +
             `<b>Task Link:</b> <a href='${link}'>View Task</a></p>`,
         };
         try {
