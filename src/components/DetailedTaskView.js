@@ -19,6 +19,7 @@ import ReassignModal from "./ReassignModal";
 import { getStagesForMediaType } from "../constants/stages";
 import { getMediaTypeLabel, getMediaTypeColor } from "../constants/mediaTypes";
 import AccessDeniedPage from "./AccessDeniedPage";
+import CompleteTaskModal from "./CompleteTaskModal";
 
 // role: 'manager' | 'photographer' | 'editor' | 'user'
 // NOTE: role is now passed as a prop from the parent. Do not use /* useAuth removed: now using role prop from parent */ here.
@@ -285,6 +286,7 @@ const DetailedTaskView = (props) => {
   }
 
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showCompleteTaskModal, setShowCompleteTaskModal] = useState(false);
   // --- File hover state for x button ---
   const [hoveredFileId, setHoveredFileId] = useState(null);
   const { addUndoAction } = useUndo();
@@ -1418,7 +1420,7 @@ console.log('Loaded task.priorityRequest:', task.priorityRequest);
           await updateDoc(taskRef, { log });
         }));
       }
-      setShowCompleteModal(false);
+      setShowCompleteTaskModal(false);
       setCompleteNotes("");
       setCompleteFileLinks([{ url: '', label: '' }]);
       // Optionally trigger parent refresh or notification here
@@ -1688,7 +1690,7 @@ console.log('Loaded task.priorityRequest:', task.priorityRequest);
                       setIsEditingProgress(true);
                     } else {
                       if (pendingProgressState === 'Completed' && pendingProgressState !== getCurrentStage(task)) {
-                        setShowCompleteModal(true);
+                        setShowCompleteTaskModal(true);
                         return;
                       }
                       setIsEditingProgress(false);
@@ -1730,6 +1732,14 @@ console.log('Loaded task.priorityRequest:', task.priorityRequest);
                 />
               </>
             )}
+
+      {/* Complete Task Modal (triggered when progress is set to Completed) */}
+      <CompleteTaskModal
+        open={showCompleteTaskModal}
+        onClose={() => setShowCompleteTaskModal(false)}
+        onConfirm={handleCompleteTask}
+        submitting={submittingComplete}
+      />
 
           {/* Complete Shooting Modal */}
           {showCompleteShootingModal && (
@@ -1913,26 +1923,7 @@ console.log('Loaded task.priorityRequest:', task.priorityRequest);
                 Complete Shooting
               </button>
             )}
-            {/* Complete Editing (Editors/Managers only when in In House Edits stage) */}
-            {(role === 'editor' || role === 'manager') && getCurrentStage(task) === 'In House Edits' && (
-              <button
-                style={{
-                  background: '#10b981',
-                  border: '1.5px solid #059669',
-                  color: '#fff',
-                  borderRadius: 8,
-                  padding: '8px 14px',
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(16,185,129,0.15)'
-                }}
-                onClick={() => setShowCompleteModal(true)}
-                title="Complete Editing"
-              >
-                Complete Editing
-              </button>
-            )}
+            
             {/* Manager-only actions */}
             {canReassign && (
             <>
@@ -2004,6 +1995,26 @@ console.log('Loaded task.priorityRequest:', task.priorityRequest);
           updatedAtISO={securityCodesUpdatedAt}
           address={propertyAddress}
         />
+        {/* Complete Editing (Editors/Managers only when in In House Edits stage) */}
+        {(role === 'editor' || role === 'manager') && getCurrentStage(task) === 'In House Edits' && (
+              <button
+                style={{
+                  background: '#10b981',
+                  border: '1.5px solid #059669',
+                  color: '#fff',
+                  borderRadius: 8,
+                  padding: '8px 14px',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(16,185,129,0.15)'
+                }}
+                onClick={() => setShowCompleteModal(true)}
+                title="Complete Editing"
+              >
+                Complete Editing
+              </button>
+            )}
       </div>
 
       {/* Two-column info grid */}
